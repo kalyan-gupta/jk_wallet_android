@@ -1,0 +1,79 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        cache: 'gradle'
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Decode Keystore
+      env:
+        KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+      run: |
+        if [ -n "$KEYSTORE_BASE64" ]; then
+          echo "$KEYSTORE_BASE64" | base64 --decode > release.keystore
+          echo "KEYSTORE_PATH=release.keystore" >> $GITHUB_ENV
+        else
+          echo "No keystore provided, release build will be unsigned"
+        fi
+
+    - name: Build Release APK
+      env:
+        KEYSTORE_PATH: ${{ env.KEYSTORE_PATH }}
+        KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+        KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+      run: ./gradlew assembleRelease
+
+    - name: Rename and Prepare Artifacts
+      run: |
+        # Extract version name from app/build.gradle.kts
+        VERSION_NAME=$(grep "versionName =" app/build.gradle.kts | awk -F'"' '{print $2}')
+        if [ -z "$VERSION_NAME" ]; then
+          VERSION_NAME="unknown"
+        fi
+        
+        APK_DIR="app/build/outputs/apk/release"
+        ORIGINAL_APK="$APK_DIR/app-release.apk"
+        RENAMED_APK="$APK_DIR/JKWallet-v${VERSION_NAME}-release.apk"
+        
+        if [ -f "$ORIGINAL_APK" ]; then
+          mv "$ORIGINAL_APK" "$RENAMED_APK"
+          echo "APK_PATH=$RENAMED_APK" >> $GITHUB_ENV
+          echo "RENAMED_NAME=JKWallet-v${VERSION_NAME}-release" >> $GITHUB_ENV
+        else
+          UNSIGNED_APK="$APK_DIR/app-release-unsigned.apk"
+          if [ -f "$UNSIGNED_APK" ]; then
+            mv "$UNSIGNED_APK" "$APK_DIR/JKWallet-v${VERSION_NAME}-release-unsigned.apk"
+            echo "APK_PATH=$APK_DIR/JKWallet-v${VERSION_NAME}-release-unsigned.apk" >> $GITHUB_ENV
+            echo "RENAMED_NAME=JKWallet-v${VERSION_NAME}-release-unsigned" >> $GITHUB_ENV
+          else
+            echo "Error: Release APK not found!"
+            exit 1
+          fi
+        fi
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.RENAMED_NAME }}
+        path: ${{ env.APK_PATH }}
