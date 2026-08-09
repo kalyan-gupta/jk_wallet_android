@@ -8,6 +8,9 @@ on:
         required: false
         default: ''
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -62,21 +65,27 @@ jobs:
         if [ -f "$ORIGINAL_APK" ]; then
           mv "$ORIGINAL_APK" "$RENAMED_APK"
           echo "APK_PATH=$RENAMED_APK" >> $GITHUB_ENV
-          echo "RENAMED_NAME=JKWallet-v${VERSION_NAME}-release" >> $GITHUB_ENV
+          echo "VERSION_TAG=v${VERSION_NAME}" >> $GITHUB_ENV
         else
           UNSIGNED_APK="$APK_DIR/app-release-unsigned.apk"
           if [ -f "$UNSIGNED_APK" ]; then
             mv "$UNSIGNED_APK" "$APK_DIR/JKWallet-v${VERSION_NAME}-release-unsigned.apk"
             echo "APK_PATH=$APK_DIR/JKWallet-v${VERSION_NAME}-release-unsigned.apk" >> $GITHUB_ENV
-            echo "RENAMED_NAME=JKWallet-v${VERSION_NAME}-release-unsigned" >> $GITHUB_ENV
+            echo "VERSION_TAG=v${VERSION_NAME}-unsigned" >> $GITHUB_ENV
           else
             echo "Error: Release APK not found!"
             exit 1
           fi
         fi
 
-    - name: Upload APK Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.RENAMED_NAME }}
-        path: ${{ env.APK_PATH }}
+    - name: Create GitHub Release
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        # Try creating the release. If it already exists, it will fail but we continue.
+        gh release create "${{ env.VERSION_TAG }}" \
+          --title "Release ${{ env.VERSION_TAG }}" \
+          --notes "Automated release build for ${{ env.VERSION_TAG }}" || true
+        
+        # Upload the asset. --clobber will overwrite the file if it already exists.
+        gh release upload "${{ env.VERSION_TAG }}" "${{ env.APK_PATH }}" --clobber
