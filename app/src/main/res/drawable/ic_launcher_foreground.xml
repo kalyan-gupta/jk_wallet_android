@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <group android:translateY="10">
+        <!-- Protruding Card / Financial Accent -->
+        <path android:pathData="M160,100h192v120h-192z" android:fillAlpha="0.9">
+            <aapt:attr name="android:fillColor">
+                <gradient android:startX="160" android:startY="100" android:endX="352" android:endY="100" android:type="linear">
+                    <item android:offset="0" android:color="#FF38BDF8"/>
+                    <item android:offset="1" android:color="#FF818CF8"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M310,140m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0" android:fillColor="#66FFFFFF"/>
+
+        <!-- Main Wallet Body (Violet Slate) -->
+        <path android:pathData="M112,178c0,-15.5 12.5,-28 28,-28h232c15.5,0 28,12.5 28,28v164c0,15.5 -12.5,28 -28,28h-232c-15.5,0 -28,-12.5 -28,-28z"
+            android:fillColor="#1E1B2E"
+            android:strokeColor="#33C084FC"
+            android:strokeWidth="2"/>
+
+        <!-- Left Flap & Clasp (Stylized 'J' Curve in Deep Violet) -->
+        <path android:pathData="M112,178c0,-15.5 12.5,-28 28,-28h80v160c0,33 -27,60 -60,60h-20c-15.5,0 -28,-12.5 -28,-28z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:startX="112" android:startY="150" android:endX="220" android:endY="370" android:type="linear">
+                    <item android:offset="0" android:color="#FFA855F7"/>
+                    <item android:offset="1" android:color="#FF7E22CE"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Right Flap (Stylized 'K' Diagonal Folds in Bright Purple-Indigo) -->
+        <path android:pathData="M236,150h136c15.5,0 28,12.5 28,28v164c0,15.5 -12.5,28 -28,28h-136z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:startX="236" android:startY="150" android:endX="400" android:endY="370" android:type="linear">
+                    <item android:offset="0" android:color="#FFC084FC"/>
+                    <item android:offset="1" android:color="#FF6366F1"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+
+        <!-- Dynamic Cutout Lines forming 'K' -->
+        <path android:pathData="M340,190l-70,70l70,70"
+            android:strokeColor="#0F0A1C"
+            android:strokeWidth="18"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round"/>
+
+        <!-- Wallet Clasp Button (Platinum / Silver Accent) -->
+        <path android:pathData="M220,260m-14,0a14,14 0,1 1,28 0a14,14 0,1 1,-28 0"
+            android:strokeColor="#FF7E22CE"
+            android:strokeWidth="4">
+            <aapt:attr name="android:fillColor">
+                <gradient android:startX="206" android:startY="246" android:endX="234" android:endY="274" android:type="linear">
+                    <item android:offset="0" android:color="#FFFFFFFF"/>
+                    <item android:offset="1" android:color="#FFCBD5E1"/>
+                </gradient>
+            </aapt:attr>
+        </path>
+    </group>
+</vector>
