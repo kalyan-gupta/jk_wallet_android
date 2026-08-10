@@ -27,6 +27,7 @@ fun ProfileScreen(
 ) {
     val username by viewModel.username
     val email by viewModel.email
+    val isBiometricEnabled by viewModel.isBiometricEnabled
     val isLoading by viewModel.isLoading
     val error by viewModel.error
     val isStaff by viewModel.isStaff
@@ -112,6 +113,42 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = !isLoading
                 )
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                HorizontalDivider()
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Biometric Lock",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Require fingerprint or PIN to open the app",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                    Switch(
+                        checked = isBiometricEnabled,
+                        onCheckedChange = viewModel::onBiometricEnabledChange,
+                        enabled = !isLoading
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                HorizontalDivider()
 
                 Spacer(modifier = Modifier.height(32.dp))
 

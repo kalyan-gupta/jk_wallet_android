@@ -4,6 +4,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.kalyangupta.wallet.data.local.SessionManager
 import com.kalyangupta.wallet.data.remote.dto.UserDto
 import com.kalyangupta.wallet.data.repository.AuthRepository
 import com.kalyangupta.wallet.util.Resource
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val sessionManager: SessionManager
 ) : ViewModel() {
 
     private val _username = mutableStateOf("")
@@ -33,6 +35,9 @@ class ProfileViewModel @Inject constructor(
     private val _isStaff = mutableStateOf(false)
     val isStaff: State<Boolean> = _isStaff
 
+    private val _isBiometricEnabled = mutableStateOf(sessionManager.isBiometricEnabled())
+    val isBiometricEnabled: State<Boolean> = _isBiometricEnabled
+
     private val _eventFlow = MutableSharedFlow<ProfileEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -40,6 +45,11 @@ class ProfileViewModel @Inject constructor(
 
     init {
         loadProfile()
+    }
+
+    fun onBiometricEnabledChange(enabled: Boolean) {
+        _isBiometricEnabled.value = enabled
+        sessionManager.saveBiometricEnabled(enabled)
     }
 
     fun loadProfile() {
