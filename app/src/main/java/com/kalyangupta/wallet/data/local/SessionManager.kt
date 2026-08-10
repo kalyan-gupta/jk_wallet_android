@@ -32,4 +32,12 @@ class SessionManager @Inject constructor(
     fun isStaff(): Boolean {
         return prefs.getBoolean("is_staff", false)
     }
+
+    fun saveBiometricEnabled(isEnabled: Boolean) {
+        prefs.edit().putBoolean("biometric_enabled", isEnabled).apply()
+    }
+
+    fun isBiometricEnabled(): Boolean {
+        return prefs.getBoolean("biometric_enabled", false)
+    }
 }

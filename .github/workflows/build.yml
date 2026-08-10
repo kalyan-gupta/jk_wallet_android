@@ -82,10 +82,10 @@ jobs:
       env:
         GH_TOKEN: ${{ github.token }}
       run: |
-        # Try creating the release. If it already exists, it will fail but we continue.
+        # Try creating the release with auto-generated release notes (changelog from commits)
         gh release create "${{ env.VERSION_TAG }}" \
           --title "Release ${{ env.VERSION_TAG }}" \
-          --notes "Automated release build for ${{ env.VERSION_TAG }}" || true
+          --generate-notes || true
         
         # Upload the asset. --clobber will overwrite the file if it already exists.
         gh release upload "${{ env.VERSION_TAG }}" "${{ env.APK_PATH }}" --clobber
