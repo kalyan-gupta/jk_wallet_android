@@ -194,7 +194,10 @@ class MainActivity : ComponentActivity() {
                                     arguments = listOf(navArgument("accountId") { type = NavType.IntType })
                                 ) {
                                     AccountEditScreen(
-                                        onBackClick = { navController.popBackStack() }
+                                        onBackClick = { navController.popBackStack() },
+                                        onDeleteSuccess = {
+                                            navController.popBackStack(Screen.Dashboard.route, false)
+                                        }
                                     )
                                 }
                             }

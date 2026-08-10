@@ -16,8 +16,17 @@ object NetworkUtils {
     }
 
     fun <T> handleResponse(response: Response<T>): Resource<T> {
-        return if (response.isSuccessful && response.body() != null) {
-            Resource.Success(response.body()!!)
+        return if (response.isSuccessful) {
+            val body = response.body()
+            if (body != null) {
+                Resource.Success(body)
+            } else if (response.code() == 204) {
+                // For 204 No Content, we can return Success with Unit if T is Unit
+                @Suppress("UNCHECKED_CAST")
+                Resource.Success(Unit as T)
+            } else {
+                Resource.Error("Empty response body")
+            }
         } else {
             val errorMsg = when (response.code()) {
                 401 -> "Unauthorized. Please login again."

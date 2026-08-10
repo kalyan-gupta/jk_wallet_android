@@ -50,6 +50,9 @@ class AccountEditViewModel @Inject constructor(
     private val _isLoading = mutableStateOf(false)
     val isLoading: State<Boolean> = _isLoading
 
+    private val _isEditMode = mutableStateOf(false)
+    val isEditMode: State<Boolean> = _isEditMode
+
     private val _eventFlow = MutableSharedFlow<EditEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -59,6 +62,7 @@ class AccountEditViewModel @Inject constructor(
         savedStateHandle.get<Int>("accountId")?.let { id ->
             if (id != -1) {
                 currentAccountId = id
+                _isEditMode.value = true
                 loadAccount(id)
             }
         }
@@ -140,7 +144,7 @@ class AccountEditViewModel @Inject constructor(
                 is Resource.Success -> {
                     refreshEventBus.publish(RefreshEventBus.RefreshEvent.ACCOUNTS)
                     refreshEventBus.publish(RefreshEventBus.RefreshEvent.ANALYTICS)
-                    _eventFlow.emit(EditEvent.Success)
+                    _eventFlow.emit(EditEvent.Saved)
                 }
                 is Resource.Error -> _eventFlow.emit(EditEvent.Error(result.message ?: "Save failed"))
                 else -> {}
@@ -157,7 +161,7 @@ class AccountEditViewModel @Inject constructor(
                 if (result is Resource.Success) {
                     refreshEventBus.publish(RefreshEventBus.RefreshEvent.ACCOUNTS)
                     refreshEventBus.publish(RefreshEventBus.RefreshEvent.ANALYTICS)
-                    _eventFlow.emit(EditEvent.Success) // Reuse Success event for navigation back
+                    _eventFlow.emit(EditEvent.Deleted)
                 } else {
                     _eventFlow.emit(EditEvent.Error(result.message ?: "Delete failed"))
                 }
@@ -166,7 +170,8 @@ class AccountEditViewModel @Inject constructor(
     }
 
     sealed class EditEvent {
-        object Success : EditEvent()
+        object Saved : EditEvent()
+        object Deleted : EditEvent()
         data class Error(val message: String) : EditEvent()
     }
 }

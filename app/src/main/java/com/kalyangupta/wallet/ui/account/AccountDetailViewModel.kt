@@ -10,8 +10,6 @@ import com.kalyangupta.wallet.data.repository.AccountRepository
 import com.kalyangupta.wallet.util.RefreshEventBus
 import com.kalyangupta.wallet.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,9 +23,6 @@ class AccountDetailViewModel @Inject constructor(
 
     private val _accountState = mutableStateOf<AccountDetailState>(AccountDetailState.Loading)
     val accountState: State<AccountDetailState> = _accountState
-
-    private val _eventFlow = MutableSharedFlow<UiEvent>()
-    val eventFlow = _eventFlow.asSharedFlow()
 
     private var currentAccountId: Int = -1
 
@@ -67,22 +62,6 @@ class AccountDetailViewModel @Inject constructor(
                 else -> {}
             }
         }
-    }
-
-    fun deleteAccount() {
-        if (currentAccountId == -1) return
-        viewModelScope.launch {
-            val result = accountRepository.deleteAccount(currentAccountId)
-            if (result is Resource.Success) {
-                refreshEventBus.publish(RefreshEventBus.RefreshEvent.ACCOUNTS)
-                refreshEventBus.publish(RefreshEventBus.RefreshEvent.ANALYTICS)
-                _eventFlow.emit(UiEvent.Deleted)
-            }
-        }
-    }
-
-    sealed class UiEvent {
-        object Deleted : UiEvent()
     }
 
     sealed class AccountDetailState {

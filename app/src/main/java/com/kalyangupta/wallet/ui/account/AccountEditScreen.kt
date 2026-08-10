@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun AccountEditScreen(
     onBackClick: () -> Unit,
+    onDeleteSuccess: () -> Unit = onBackClick,
     viewModel: AccountEditViewModel = hiltViewModel()
 ) {
     val name by viewModel.name
@@ -27,8 +29,11 @@ fun AccountEditScreen(
     val investedAmount by viewModel.investedAmount
     val notes by viewModel.notes
     val isLoading by viewModel.isLoading
+    val isEditMode by viewModel.isEditMode
 
     var typeMenuExpanded by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    
     val accountTypes = listOf(
         "BANK" to "Bank Account",
         "CASH" to "Cash Wallet",
@@ -40,16 +45,43 @@ fun AccountEditScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is AccountEditViewModel.EditEvent.Success -> onBackClick()
+                is AccountEditViewModel.EditEvent.Saved -> onBackClick()
+                is AccountEditViewModel.EditEvent.Deleted -> onDeleteSuccess()
                 is AccountEditViewModel.EditEvent.Error -> { /* Show error snackbar or toast */ }
             }
         }
     }
 
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Delete Account permanently?") },
+            text = { 
+                Text("This action cannot be undone. All transactions associated with this account will also be deleted. Are you absolutely sure?") 
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteDialog = false
+                        viewModel.deleteAccount()
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                ) {
+                    Text("Yes, Delete")
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Add/Edit Account") },
+                title = { Text(if (isEditMode) "Edit Account" else "Add Account") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
@@ -182,6 +214,22 @@ fun AccountEditScreen(
                     enabled = !isLoading
                 ) {
                     Text("Save Account")
+                }
+            }
+            
+            if (isEditMode) {
+                item {
+                    OutlinedButton(
+                        onClick = { showDeleteDialog = true },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = MaterialTheme.shapes.medium,
+                        enabled = !isLoading,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Icon(Icons.Default.Delete, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Delete Account")
+                    }
                 }
             }
         }
