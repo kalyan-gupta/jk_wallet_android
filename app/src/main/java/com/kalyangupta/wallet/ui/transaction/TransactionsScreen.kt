@@ -86,7 +86,7 @@ fun TransactionsScreen(
 @Composable
 fun TransactionItem(transaction: TransactionDto, onClick: () -> Unit, onDelete: () -> Unit) {
     ListItem(
-        headlineContent = { Text(transaction.category, fontWeight = FontWeight.Bold) },
+        headlineContent = { Text(transaction.categoryDisplay ?: transaction.category, fontWeight = FontWeight.Bold) },
         supportingContent = { Text(transaction.date, style = MaterialTheme.typography.labelSmall) },
         trailingContent = { 
             Row(verticalAlignment = Alignment.CenterVertically) {

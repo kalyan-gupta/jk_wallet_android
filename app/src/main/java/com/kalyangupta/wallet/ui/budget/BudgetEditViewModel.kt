@@ -6,7 +6,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kalyangupta.wallet.data.remote.dto.BudgetDto
+import com.kalyangupta.wallet.data.remote.dto.CategoryDto
 import com.kalyangupta.wallet.data.repository.BudgetRepository
+import com.kalyangupta.wallet.data.repository.CategoryRepository
 import com.kalyangupta.wallet.util.RefreshEventBus
 import com.kalyangupta.wallet.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,12 +22,27 @@ import javax.inject.Inject
 @HiltViewModel
 class BudgetEditViewModel @Inject constructor(
     private val budgetRepository: BudgetRepository,
+    private val categoryRepository: CategoryRepository,
     private val refreshEventBus: RefreshEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    private val DEFAULT_CATEGORIES = listOf(
+        CategoryDto(code = "FOOD", name = "Food & Dining"),
+        CategoryDto(code = "SHOPPING", name = "Shopping & Electronics"),
+        CategoryDto(code = "BILLS", name = "Utilities & Bills"),
+        CategoryDto(code = "SALARY", name = "Salary & Income"),
+        CategoryDto(code = "RENT", name = "Rent & Housing"),
+        CategoryDto(code = "INVESTMENT", name = "Investments & Mutual Funds"),
+        CategoryDto(code = "ENTERTAINMENT", name = "Entertainment & Subscriptions"),
+        CategoryDto(code = "OTHERS", name = "Others / Misc")
+    )
+
     private val _category = mutableStateOf("FOOD")
     val category: State<String> = _category
+
+    private val _categories = mutableStateOf<List<CategoryDto>>(DEFAULT_CATEGORIES)
+    val categories: State<List<CategoryDto>> = _categories
 
     private val _amountLimit = mutableStateOf("")
     val amountLimit: State<String> = _amountLimit
@@ -45,10 +62,20 @@ class BudgetEditViewModel @Inject constructor(
     private var currentBudgetId: Int = -1
 
     init {
+        loadCategories()
         savedStateHandle.get<Int>("budgetId")?.let { id ->
             if (id != -1) {
                 currentBudgetId = id
                 loadBudget(id)
+            }
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            val result = categoryRepository.getCategories()
+            if (result is Resource.Success && !result.data.isNullOrEmpty()) {
+                _categories.value = result.data
             }
         }
     }

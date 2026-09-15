@@ -6,8 +6,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kalyangupta.wallet.data.remote.dto.AccountDto
+import com.kalyangupta.wallet.data.remote.dto.CategoryDto
 import com.kalyangupta.wallet.data.remote.dto.TransactionDto
 import com.kalyangupta.wallet.data.repository.AccountRepository
+import com.kalyangupta.wallet.data.repository.CategoryRepository
 import com.kalyangupta.wallet.data.repository.TransactionRepository
 import com.kalyangupta.wallet.util.RefreshEventBus
 import com.kalyangupta.wallet.util.Resource
@@ -24,15 +26,32 @@ import javax.inject.Inject
 class TransactionEditViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val accountRepository: AccountRepository,
+    private val categoryRepository: CategoryRepository,
     private val refreshEventBus: RefreshEventBus,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val DEFAULT_CATEGORIES = listOf(
+        CategoryDto(code = "FOOD", name = "Food & Dining"),
+        CategoryDto(code = "SHOPPING", name = "Shopping & Electronics"),
+        CategoryDto(code = "BILLS", name = "Utilities & Bills"),
+        CategoryDto(code = "SALARY", name = "Salary & Income"),
+        CategoryDto(code = "RENT", name = "Rent & Housing"),
+        CategoryDto(code = "INVESTMENT", name = "Investments & Mutual Funds"),
+        CategoryDto(code = "TRANSFER", name = "Account Transfer"),
+        CategoryDto(code = "CARD_BILL", name = "Credit Card Bill"),
+        CategoryDto(code = "ENTERTAINMENT", name = "Entertainment & Subscriptions"),
+        CategoryDto(code = "OTHERS", name = "Others / Misc")
+    )
 
     private val _transactionType = mutableStateOf("EXPENSE")
     val transactionType: State<String> = _transactionType
 
     private val _category = mutableStateOf("OTHERS")
     val category: State<String> = _category
+
+    private val _categories = mutableStateOf<List<CategoryDto>>(DEFAULT_CATEGORIES)
+    val categories: State<List<CategoryDto>> = _categories
 
     private val _amount = mutableStateOf("")
     val amount: State<String> = _amount
@@ -65,6 +84,7 @@ class TransactionEditViewModel @Inject constructor(
 
     init {
         loadAccounts()
+        loadCategories()
         savedStateHandle.get<Int>("transactionId")?.let { id ->
             if (id != -1) {
                 currentTransactionId = id
@@ -78,6 +98,15 @@ class TransactionEditViewModel @Inject constructor(
             val result = accountRepository.getAccounts()
             if (result is Resource.Success) {
                 _accounts.value = result.data ?: emptyList()
+            }
+        }
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            val result = categoryRepository.getCategories()
+            if (result is Resource.Success && !result.data.isNullOrEmpty()) {
+                _categories.value = result.data
             }
         }
     }

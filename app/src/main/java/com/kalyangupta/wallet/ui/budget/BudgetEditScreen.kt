@@ -18,22 +18,13 @@ fun BudgetEditScreen(
     viewModel: BudgetEditViewModel = hiltViewModel()
 ) {
     val category by viewModel.category
+    val categories by viewModel.categories
     val amountLimit by viewModel.amountLimit
     val month by viewModel.month
     val year by viewModel.year
     val isLoading by viewModel.isLoading
 
     var categoryMenuExpanded by remember { mutableStateOf(false) }
-    val categories = listOf(
-        "FOOD" to "Food & Dining",
-        "SHOPPING" to "Shopping & Electronics",
-        "BILLS" to "Utilities & Bills",
-        "SALARY" to "Salary & Income",
-        "RENT" to "Rent & Housing",
-        "INVESTMENT" to "Investments & Mutual Funds",
-        "ENTERTAINMENT" to "Entertainment & Subscriptions",
-        "OTHERS" to "Others / Misc"
-    )
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
@@ -78,7 +69,7 @@ fun BudgetEditScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 OutlinedTextField(
-                    value = categories.find { it.first == category }?.second ?: category,
+                    value = categories.find { it.code == category }?.name ?: category,
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Budget Category") },
@@ -89,11 +80,11 @@ fun BudgetEditScreen(
                     expanded = categoryMenuExpanded,
                     onDismissRequest = { categoryMenuExpanded = false }
                 ) {
-                    categories.forEach { (code, label) ->
+                    categories.forEach { catDto ->
                         DropdownMenuItem(
-                            text = { Text(label) },
+                            text = { Text(catDto.name) },
                             onClick = {
-                                viewModel.onCategoryChange(code)
+                                viewModel.onCategoryChange(catDto.code)
                                 categoryMenuExpanded = false
                             }
                         )
