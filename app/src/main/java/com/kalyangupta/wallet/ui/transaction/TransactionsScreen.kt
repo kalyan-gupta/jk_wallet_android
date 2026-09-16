@@ -18,6 +18,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.kalyangupta.wallet.data.remote.dto.TransactionDto
 import com.kalyangupta.wallet.ui.components.ErrorView
 import com.kalyangupta.wallet.ui.components.WalletPullToRefreshBox
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,16 +86,30 @@ fun TransactionsScreen(
 
 @Composable
 fun TransactionItem(transaction: TransactionDto, onClick: () -> Unit, onDelete: () -> Unit) {
+    val typeLabel = transaction.transactionTypeDisplay
+        ?: transaction.transactionType.replace("_", " ").lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+
+    val isIncome = transaction.transactionType in listOf("INCOME", "SELL_PORTFOLIO", "DEMAT_WITHDRAWAL")
+    val isExpense = transaction.transactionType in listOf("EXPENSE", "PAY_PEOPLE", "BUY_PORTFOLIO", "DEMAT_DEPOSIT", "DIRECT_INVEST", "CARD_PAYMENT")
+    val sign = if (isIncome) "+" else if (isExpense) "-" else ""
+    val amountColor = if (isIncome) Color(0xFF4CAF50) else if (isExpense) Color(0xFFF44336) else MaterialTheme.colorScheme.onSurface
+
     ListItem(
         headlineContent = { Text(transaction.categoryDisplay ?: transaction.category, fontWeight = FontWeight.Bold) },
-        supportingContent = { Text(transaction.date, style = MaterialTheme.typography.labelSmall) },
+        supportingContent = { 
+            Text(
+                text = "${transaction.date} • $typeLabel",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            ) 
+        },
         trailingContent = { 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = (if (transaction.transactionType == "INCOME") "+" else "-") + "₹${transaction.amount}",
+                    text = "$sign₹${transaction.amount}",
                     fontWeight = FontWeight.ExtraBold,
                     style = MaterialTheme.typography.bodyLarge,
-                    color = if (transaction.transactionType == "INCOME") Color(0xFF4CAF50) else Color(0xFFF44336)
+                    color = amountColor
                 ) 
                 IconButton(onClick = onDelete) {
                     Icon(

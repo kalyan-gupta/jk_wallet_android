@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.kalyangupta.wallet.ui.components.DatePickerField
 import kotlinx.coroutines.flow.collectLatest
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,9 +43,16 @@ fun TransactionEditScreen(
         "TRANSFER" to "Internal Self Transfer",
         "PAY_PEOPLE" to "Paid to Person / External",
         "CARD_PAYMENT" to "Credit Card Bill Payment",
-        "DEMAT_DEPOSIT" to "Investment into Demat",
-        "DEMAT_WITHDRAWAL" to "Withdrawal from Demat"
+        "DEMAT_DEPOSIT" to "Deposit Cash into Demat",
+        "DEMAT_WITHDRAWAL" to "Withdraw Cash from Demat",
+        "BUY_PORTFOLIO" to "Buy Portfolio / Invest Cash in Demat",
+        "SELL_PORTFOLIO" to "Liquidate Portfolio to Demat Cash",
+        "DIRECT_INVEST" to "Direct Investment from Bank to Demat",
+        "PORTFOLIO_VALUATION" to "Portfolio Valuation Adjustment"
     )
+
+    val currentTypeLabel = transactionTypes.find { it.first == transactionType }?.second
+        ?: transactionType.replace("_", " ").lowercase().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
 
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
@@ -90,7 +98,7 @@ fun TransactionEditScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     OutlinedTextField(
-                        value = transactionTypes.find { it.first == transactionType }?.second ?: transactionType,
+                        value = currentTypeLabel,
                         onValueChange = {},
                         readOnly = true,
                         label = { Text("Transaction Type") },

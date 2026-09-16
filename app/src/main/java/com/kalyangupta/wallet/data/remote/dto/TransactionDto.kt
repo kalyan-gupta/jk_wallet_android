@@ -14,5 +14,6 @@ data class TransactionDto(
     @SerializedName("description") val description: String?,
     @SerializedName("date") val date: String,
     @SerializedName("created_at") val createdAt: String,
-    @SerializedName("category_display") val categoryDisplay: String? = null
+    @SerializedName("category_display") val categoryDisplay: String? = null,
+    @SerializedName("transaction_type_display") val transactionTypeDisplay: String? = null
 )
